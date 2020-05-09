@@ -1,5 +1,6 @@
 .vscode
 .mypy_cache
+.vector_cache
 __pycache__
 aclImdb
 aclImdb_v1
