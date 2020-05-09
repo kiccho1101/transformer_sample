@@ -98,30 +98,42 @@ def create_dataloader(
     train_ds: torch.utils.data.Dataset,
     val_ds: torch.utils.data.Dataset,
     test_ds: torchtext.data.TabularDataset,
+    batch_size: int = 24,
+    max_length: int = 256,
 ) -> Tuple[torchtext.data.Iterator, torchtext.data.Iterator, torchtext.data.Iterator]:
     """
     datasetからdataloaderを作成
     """
-    train_dl = torchtext.data.Iterator(train_ds, batch_size=24, train=True)
-    val_dl = torchtext.data.Iterator(val_ds, batch_size=24, train=False, sort=False)
-    test_dl = torchtext.data.Iterator(test_ds, batch_size=24, train=False, sort=False)
-    assert next(iter(val_dl)).Text[0].shape == torch.Size([24, 256])
-    assert next(iter(val_dl)).Text[1].shape == torch.Size([24])
-    assert next(iter(val_dl)).Label.shape == torch.Size([24])
+    train_dl = torchtext.data.Iterator(train_ds, batch_size=batch_size, train=True)
+    val_dl = torchtext.data.Iterator(
+        val_ds, batch_size=batch_size, train=False, sort=False
+    )
+    test_dl = torchtext.data.Iterator(
+        test_ds, batch_size=batch_size, train=False, sort=False
+    )
+    assert next(iter(val_dl)).Text[0].shape == torch.Size([batch_size, max_length])
+    assert next(iter(val_dl)).Text[1].shape == torch.Size([batch_size])
+    assert next(iter(val_dl)).Label.shape == torch.Size([batch_size])
     return train_dl, val_dl, test_dl
 
 
-def dataloader() -> Tuple[
-    torchtext.data.Iterator, torchtext.data.Iterator, torchtext.data.Iterator
+def get_IMDb_Dataloaders_and_TEXT(
+    max_length: int = 256, batch_size: int = 24
+) -> Tuple[
+    torchtext.data.Iterator,
+    torchtext.data.Iterator,
+    torchtext.data.Iterator,
+    torchtext.data.Field,
 ]:
-    TEXT, LABEL = define_field()
+    TEXT, LABEL = define_field(max_length)
     train_val_ds, test_ds = read_dataset(TEXT, LABEL)
     train_ds, val_ds = split_train_ds(train_val_ds)
     TEXT, english_fasttext_vectors = build_vocab(TEXT, train_ds)
-    train_dl, val_dl, test_dl = create_dataloader(train_ds, val_ds, test_ds)
-    return train_dl, val_dl, test_dl
+    train_dl, val_dl, test_dl = create_dataloader(
+        train_ds, val_ds, test_ds, batch_size=batch_size, max_length=max_length
+    )
+    return train_dl, val_dl, test_dl, TEXT
 
 
-# %%
 if __name__ == "__main__":
-    dataloader()
+    get_IMDb_Dataloaders_and_TEXT()
