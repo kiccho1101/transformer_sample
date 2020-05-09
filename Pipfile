@@ -49,6 +49,7 @@ statsmodels = "*"
 tensorflow = "*"
 catch22 = "*"
 fastprogress = "*"
+torchtext = "*"
 
 [requires]
 python_version = "3.7"
